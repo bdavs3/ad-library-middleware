@@ -1,7 +1,11 @@
 package facebook
 
 type Response struct {
-	ID                        int                    `json:"id"`
+	Content []Entry `json:"data"`
+}
+
+type Entry struct {
+	ID                        string                 `json:"id"`
 	AdCreationTime            string                 `json:"ad_creation_time,omitempty"`
 	AdCreativeBody            string                 `json:"ad_creative_body,omitempty"`
 	AdCreativeLinkCaption     string                 `json:"ad_creative_link_caption,omitempty"`
