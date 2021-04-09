@@ -4,11 +4,12 @@ import (
 	"ad-library-middleware/facebook"
 	"fmt"
 	"log"
+	"os"
 )
 
 func main() {
 	req := &facebook.Request{
-		AccessToken:        "EAACFomGEN60BAIwSbPB8W07U9xXh8TfaCZAW5tiUu9jfXKQBbe4vutM7RQegfxl8qA1ib67WEHdZAqqQXqAH1GMqb0XwauTftLBwxiKGIauSEDWpQkQTE8X79CGfnrHL3ZCYoWAECXy2LFPlQA5F9ZCvr7LUBMinJXtTLlh3boodrArVPPJ4i387atoKt0ZADA6Jfn1ZBHrgi6UlimJTPgWkls6ZC0qzu34CzCwXceJKJulRSbVR7IPSeqfpXTehVoZD",
+		AccessToken:        os.Getenv("access_token"),
 		SearchTerms:        "california",
 		AdReachedCountries: "US",
 	}
@@ -21,6 +22,7 @@ func main() {
 	}
 
 	for _, entry := range resp.Content {
-		fmt.Println(entry) // This is where BigQuery will be invoked
+		fmt.Printf("%+v\n", entry)
+		// This is where BigQuery will be invoked
 	}
 }
