@@ -12,6 +12,7 @@ func main() {
 		AccessToken:        os.Getenv("access_token"),
 		SearchTerms:        "california",
 		AdReachedCountries: "US",
+		Limit:              10,
 	}
 
 	client := facebook.NewClient()
