@@ -6,13 +6,13 @@ type Response struct {
 
 type Entry struct {
 	ID                        string        `json:"id"`
-	AdCreationTime            string        `json:"ad_creation_time,omitempty"`
+	AdCreationDate            string        `json:"ad_creation_time,omitempty"`
 	AdCreativeBody            string        `json:"ad_creative_body,omitempty"`
 	AdCreativeLinkCaption     string        `json:"ad_creative_link_caption,omitempty"`
 	AdCreativeLinkDescription string        `json:"ad_creative_link_description,omitempty"`
 	AdCreativeLinkTitle       string        `json:"ad_creative_link_title,omitempty"`
-	AdDeliveryStartTime       string        `json:"ad_delivery_start_time,omitempty"`
-	AdDeliveryStopTime        string        `json:"ad_delivery_stop_time,omitempty"`
+	AdDeliveryStartDate       string        `json:"ad_delivery_start_time,omitempty"`
+	AdDeliveryStopDate        string        `json:"ad_delivery_stop_time,omitempty"`
 	AdSnapshotURL             string        `json:"ad_snapshot_url,omitempty"`
 	Currency                  string        `json:"currency,omitempty"`
 	DemographicDistribution   []Demographic `json:"demographic_distribution,omitempty"`

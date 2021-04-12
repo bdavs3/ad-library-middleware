@@ -16,6 +16,7 @@ type Connection struct {
 func NewConnection(project string) (*Connection, error) {
 	ctx := context.Background()
 	client, err := bigquery.NewClient(ctx, project)
+
 	if err != nil {
 		return nil, err
 	}
@@ -24,6 +25,18 @@ func NewConnection(project string) (*Connection, error) {
 		ctx:    ctx,
 		client: client,
 	}, nil
+}
+
+func (conn *Connection) Insert(dataset, table string, data interface{}) error {
+	ds := conn.client.Dataset(dataset)
+	tb := ds.Table(table)
+	u := tb.Inserter()
+
+	if err := u.Put(conn.ctx, data); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (conn *Connection) RunQuery(body string) error {

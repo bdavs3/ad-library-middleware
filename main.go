@@ -2,6 +2,7 @@ package main
 
 import (
 	"ad-library-middleware/facebook"
+	"ad-library-middleware/middleware"
 	"fmt"
 	"log"
 	"os"
@@ -12,18 +13,16 @@ func main() {
 		AccessToken:        os.Getenv("access_token"),
 		SearchTerms:        "california",
 		AdReachedCountries: "US",
-		Limit:              10,
+		Limit:              25,
 	}
 
-	client := facebook.NewClient()
-
-	resp, err := client.GetAdLibraryData(req)
+	resp, err := middleware.GetAdLibraryData(req)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Err retrieving data:\n%v", err))
+		log.Fatal(fmt.Sprintf("Err retrieving FB data:\n%v", err))
 	}
 
-	for _, entry := range resp.Content {
-		fmt.Printf("%+v\n", entry)
-		// This is where BigQuery will be invoked
+	err = middleware.InsertAdLibraryData(resp)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Err inserting to Bigquery:\n%v", err))
 	}
 }
