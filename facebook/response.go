@@ -2,6 +2,7 @@ package facebook
 
 type Response struct {
 	Content []Entry `json:"data"`
+	Paging  Paging  `json:"paging"`
 }
 
 type Entry struct {
@@ -24,6 +25,15 @@ type Entry struct {
 	PublisherPlatforms        []string      `json:"publisher_platforms,omitempty"`
 	RegionDistribution        []Region      `json:"region_distribution,omitempty"`
 	Spend                     InsightsRange `json:"spend,omitempty"`
+}
+
+type Paging struct {
+	Cursors Cursors `json:"cursors"`
+}
+
+type Cursors struct {
+	Before string `json:"before"`
+	After  string `json:"after"`
 }
 
 type Demographic struct {
