@@ -11,7 +11,7 @@ import (
 
 const (
 	adLibraryURL  = "https://graph.facebook.com/v10.0/ads_archive?"
-	searchPattern = "fields=%v&access_token=%v&search_terms=%v&ad_reached_countries=%v&limit=%v"
+	searchPattern = "fields=%v&access_token=%v&search_terms=%v&ad_reached_countries=%v&ad_type=%v"
 	defaultFields = "['id','ad_creation_time','ad_creative_body','ad_creative_link_caption','ad_creative_link_description','ad_creative_link_title','ad_delivery_start_time','ad_delivery_stop_time','ad_snapshot_url','currency','demographic_distribution','funding_entity','impressions','page_id','page_name','potential_reach','publisher_platforms','region_distribution','spend']"
 	timeout       = 5 * time.Second
 )
@@ -35,7 +35,7 @@ func (c *Client) GetAdLibraryData(req *Request) (*Response, error) {
 		req.AccessToken,
 		req.SearchTerms,
 		req.AdReachedCountries,
-		req.Limit,
+		req.AdType,
 	)
 
 	response, err := c.MakeRequest(

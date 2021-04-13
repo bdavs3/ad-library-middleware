@@ -13,7 +13,9 @@ func main() {
 		AccessToken:        os.Getenv("access_token"),
 		SearchTerms:        "california",
 		AdReachedCountries: "US",
-		Limit:              25,
+		// This is currently the only ad_type supported. But want to keep this here
+		// in case Facebook adds others.
+		AdType: "POLITICAL_AND_ISSUE_ADS",
 	}
 
 	resp, err := middleware.GetAdLibraryData(req)
