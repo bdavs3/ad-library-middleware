@@ -28,7 +28,7 @@ func NewClient() *Client {
 	}
 }
 
-func (c *Client) GetAdLibraryData(req *Request) (*Response, error) {
+func (c *Client) GetAdLibraryData(req *Request, after string) (*Response, error) {
 	params := fmt.Sprintf(
 		searchPattern,
 		defaultFields,
@@ -37,6 +37,10 @@ func (c *Client) GetAdLibraryData(req *Request) (*Response, error) {
 		req.AdReachedCountries,
 		req.AdType,
 	)
+
+	if after != "" {
+		params += fmt.Sprintf("&after=%v", after)
+	}
 
 	response, err := c.MakeRequest(
 		http.MethodGet,

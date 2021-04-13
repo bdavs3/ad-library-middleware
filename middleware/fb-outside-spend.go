@@ -16,10 +16,10 @@ const (
 
 // GetAdLibraryData uses parameters from a Request object to return a Response struct
 // containing information from the Facebook ad library.
-func GetAdLibraryData(req *facebook.Request) (*facebook.Response, error) {
+func GetAdLibraryData(req *facebook.Request, after string) (*facebook.Response, error) {
 	client := facebook.NewClient()
 
-	resp, err := client.GetAdLibraryData(req)
+	resp, err := client.GetAdLibraryData(req, after)
 	if err != nil {
 		return nil, err
 	}
