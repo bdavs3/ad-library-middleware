@@ -29,6 +29,11 @@ type TblDemographicDistribution struct {
 	Percentage  float32 `bigquery:"Percentage"`
 }
 
+type TblPublisherPlatforms struct {
+	ID          string `bigquery:"PublisherPlatformID"`
+	AdLibraryID string `bigquery:"AdLibraryID"`
+}
+
 type TblRegionDistribution struct {
 	ID          string  `bigquery:"RegionDistributionID"`
 	AdLibraryID string  `bigquery:"AdLibraryID"`
@@ -59,6 +64,11 @@ type TlkpGender struct {
 type TlkpPage struct {
 	ID   string `bigquery:"PageID"`
 	Page string `bigquery:"Page"`
+}
+
+type TlkpPublisherPlatforms struct {
+	ID                string `bigquery:"PublisherPlatformID"`
+	PublisherPlatform string `bigquery:"PublisherPlatform"`
 }
 
 type TlkpRegion struct {
