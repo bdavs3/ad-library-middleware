@@ -38,6 +38,7 @@ func (c *Client) GetAdLibraryData(req *Request, after string) (*Response, error)
 		req.AdType,
 	)
 
+	// Handles pagination
 	if after != "" {
 		params += fmt.Sprintf("&after=%v", after)
 	}

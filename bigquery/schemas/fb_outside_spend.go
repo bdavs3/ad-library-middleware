@@ -1,6 +1,6 @@
 package schemas
 
-type AdLibraryData struct {
+type TblAdLibrary struct {
 	ID                        string `bigquery:"AdLibraryID"`
 	AdCreationDate            string `bigquery:"AdCreationDate"`
 	AdCreativeBody            string `bigquery:"AdCreativeBody"`
