@@ -20,3 +20,48 @@ type TblAdLibrary struct {
 	SpendLower                int    `bigquery:"SpendLower"`
 	SpendUpper                int    `bigquery:"SpendUpper"`
 }
+
+type TblDemographicDistribution struct {
+	ID          string  `bigquery:"DemographicDistributionID"`
+	AdLibraryID string  `bigquery:"AdLibraryID"`
+	AgeRangeID  string  `bigquery:"AgeRangeID"`
+	GenderID    string  `bigquery:"GenderID"`
+	Percentage  float32 `bigquery:"Percentage"`
+}
+
+type TblRegionDistribution struct {
+	ID          string  `bigquery:"RegionDistributionID"`
+	AdLibraryID string  `bigquery:"AdLibraryID"`
+	RegionID    string  `bigquery:"RegionID"`
+	Percentage  float32 `bigquery:"Percentage"`
+}
+
+type TlkpAgeRange struct {
+	ID       string `bigquery:"AgeRangeID"`
+	AgeRange string `bigquery:"AgeRange"`
+}
+
+type TlkpCurrency struct {
+	ID       string `bigquery:"CurrencyID"`
+	Currency string `bigquery:"Currency"`
+}
+
+type TlkpFundingEntity struct {
+	ID            string `bigquery:"FundingEntityID"`
+	FundingEntity string `bigquery:"FundingEntity"`
+}
+
+type TlkpGender struct {
+	ID     string `bigquery:"GenderID"`
+	Gender string `bigquery:"Gender"`
+}
+
+type TlkpPage struct {
+	ID   string `bigquery:"PageID"`
+	Page string `bigquery:"Page"`
+}
+
+type TlkpRegion struct {
+	ID     string `bigquery:"RegionID"`
+	Region string `bigquery:"Region"`
+}
