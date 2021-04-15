@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ad-library-middleware/bigquery"
+	"ad-library-middleware/database"
 	"ad-library-middleware/facebook"
 	"ad-library-middleware/middleware"
 	"fmt"
@@ -25,30 +25,22 @@ func main() {
 	}
 
 	var after string
-	tables := []string{"tblAdLibrary"}
 
 	for {
+		fmt.Println("here")
 		resp, err := facebook.NewClient().GetAdLibraryData(req, after)
 		if err != nil {
 			log.Fatal(fmt.Sprintf("Err retrieving Facebook Ad Library data:\n%v", err))
 		}
 
-		conn, err := bigquery.NewConnection(project, dataset)
+		conn, err := database.NewConnection(project, dataset)
 		if err != nil {
 			log.Fatal(fmt.Sprintf("Err connecting to BigQuery:\n%v", err))
 		}
 
-		var tableData interface{}
-
-		for _, tableName := range tables {
-			tableData, err = middleware.InterpretResponse(resp, tableName)
-			if err != nil {
-				log.Fatal(fmt.Sprintf("Could not interpet Facebook response into %v:\n%v", tableName, err))
-			}
-			conn.Insert(tableName, tableData)
-			if err != nil {
-				log.Fatal(fmt.Sprintf("Err inserting to %v:\n%v", tableName, err))
-			}
+		err = middleware.UploadResponseData(resp, conn)
+		if err != nil {
+			log.Fatal(fmt.Sprintf("Err in UploadResponseData:\n%v", err))
 		}
 
 		after = resp.Paging.Cursors.After

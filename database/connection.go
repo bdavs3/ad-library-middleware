@@ -1,4 +1,4 @@
-package bigquery
+package database
 
 import (
 	"context"
@@ -35,4 +35,9 @@ func (conn *Connection) Insert(table string, data interface{}) error {
 	}
 
 	return nil
+}
+
+func (conn *Connection) Select(table string) *bigquery.RowIterator {
+	tb := conn.dataset.Table(table)
+	return tb.Read(conn.ctx)
 }
