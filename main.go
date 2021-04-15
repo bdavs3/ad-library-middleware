@@ -17,34 +17,30 @@ const (
 func main() {
 	req := &facebook.Request{
 		AccessToken:        os.Getenv("access_token"),
-		SearchTerms:        "alaska",
 		AdReachedCountries: "US",
 		// This is currently the only ad_type supported. But should keep this here
 		// in case Facebook decides to support others.
-		AdType: "POLITICAL_AND_ISSUE_ADS",
+		AdType:      "POLITICAL_AND_ISSUE_ADS",
+		SearchTerms: "alaska",
 	}
 
-	var after string
+	credentials, err := facebook.GetCredentials("fb-credentials.json")
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Err creating Facebook credentials:\n%v", err))
+	}
 
-	for {
-		resp, err := facebook.NewClient().GetAdLibraryData(req, after)
-		if err != nil {
-			log.Fatal(fmt.Sprintf("Err retrieving Facebook Ad Library data:\n%v", err))
-		}
+	items, err := facebook.NewSdk(credentials, req.AccessToken).GetAdLibraryData(req)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Err retrieving Facebook Ad Library data:\n%v", err))
+	}
 
-		conn, err := database.NewConnection(project, dataset)
-		if err != nil {
-			log.Fatal(fmt.Sprintf("Err connecting to BigQuery:\n%v", err))
-		}
+	conn, err := database.NewConnection(project, dataset)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Err connecting to BigQuery:\n%v", err))
+	}
 
-		err = middleware.UploadResponseData(resp, conn)
-		if err != nil {
-			log.Fatal(fmt.Sprintf("Err in UploadResponseData:\n%v", err))
-		}
-
-		after = resp.Paging.Cursors.After
-		if after == "" {
-			break
-		}
+	err = middleware.UploadResponseData(items, conn)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Err in UploadResponseData:\n%v", err))
 	}
 }

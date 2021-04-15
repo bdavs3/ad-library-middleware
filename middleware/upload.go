@@ -12,12 +12,11 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-// UploadResponseData uses the given Response from the Facebook Ad Library to return a slice of
-// structs that conform to the schema of the given table.
-func UploadResponseData(resp *facebook.Response, conn *database.Connection) error {
+// UploadResponseData uses the given items from the Facebook Ad Library to update BigQuery.
+func UploadResponseData(items []*facebook.Item, conn *database.Connection) error {
 	var rows []*schemas.TblAdLibrary
 
-	for _, item := range resp.Content {
+	for _, item := range items {
 		// Update tlkpFundingEntity
 		iter := conn.Select("tlkpFundingEntity")
 		fundingEntityID, err := findValue(iter, item.FundingEntity, "FundingEntity", "FundingEntityID")
@@ -168,7 +167,10 @@ func UploadResponseData(resp *facebook.Response, conn *database.Connection) erro
 	}
 
 	// Update tblAdLibrary
-	conn.Insert("tblAdLibrary", rows)
+	err := conn.Insert("tblAdLibrary", rows)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

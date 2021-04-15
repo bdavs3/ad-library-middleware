@@ -1,11 +1,16 @@
 package facebook
 
+// Response is no longer needed now that an SDK is used to consume the paginated API
 type Response struct {
-	Content []Entry `json:"data"`
-	Paging  Paging  `json:"paging"`
+	Content []Item `json:"data"`
+	Paging  Paging `json:"paging"`
 }
 
-type Entry struct {
+// Item represents a political advertisement coming down from the Ad Library. Notice that fields
+// like AdCreationDate actually map to JSON fields such as "ad_creation_time". This is because
+// full UTC values never seem to come down from the Ad Library, so the database columns have
+// been named using "Date" instead of "Time".
+type Item struct {
 	ID                        string        `json:"id"`
 	AdCreationDate            string        `json:"ad_creation_time,omitempty"`
 	AdCreativeBody            string        `json:"ad_creative_body,omitempty"`
