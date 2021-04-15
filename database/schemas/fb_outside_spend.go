@@ -10,7 +10,6 @@ type TblAdLibrary struct {
 	AdDeliveryStartDate       string `bigquery:"AdDeliveryStartDate"`
 	AdDeliveryStopDate        string `bigquery:"AdDeliveryStopDate"`
 	AdSnapshotURL             string `bigquery:"AdSnapshotURL"`
-	CurrencyID                string `bigquery:"CurrencyID"`
 	FundingEntityID           string `bigquery:"FundingEntityID"`
 	ImpressionsLower          int    `bigquery:"ImpressionsLower"`
 	ImpressionsUpper          int    `bigquery:"ImpressionsUpper"`
@@ -44,11 +43,6 @@ type TblRegionDistribution struct {
 type TlkpAgeRange struct {
 	ID       string `bigquery:"AgeRangeID"`
 	AgeRange string `bigquery:"AgeRange"`
-}
-
-type TlkpCurrency struct {
-	ID       string `bigquery:"CurrencyID"`
-	Currency string `bigquery:"Currency"`
 }
 
 type TlkpFundingEntity struct {

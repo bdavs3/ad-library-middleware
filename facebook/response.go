@@ -15,7 +15,6 @@ type Entry struct {
 	AdDeliveryStartDate       string        `json:"ad_delivery_start_time,omitempty"`
 	AdDeliveryStopDate        string        `json:"ad_delivery_stop_time,omitempty"`
 	AdSnapshotURL             string        `json:"ad_snapshot_url,omitempty"`
-	Currency                  string        `json:"currency,omitempty"`
 	DemographicDistribution   []Demographic `json:"demographic_distribution,omitempty"`
 	FundingEntity             string        `json:"funding_entity,omitempty"`
 	Impressions               InsightsRange `json:"impressions,omitempty"`

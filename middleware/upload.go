@@ -18,21 +18,7 @@ func UploadResponseData(resp *facebook.Response, conn *database.Connection) erro
 	var rows []*schemas.TblAdLibrary
 
 	for _, item := range resp.Content {
-		iter := conn.Select("tlkpCurrency")
-		currencyID, err := findValue(iter, item.Currency, "Currency", "CurrencyID")
-		if err != nil {
-			return err
-		}
-		if currencyID == "" {
-			currencyID = uuid.NewString()
-			row := &schemas.TlkpCurrency{
-				ID:       currencyID,
-				Currency: item.Currency,
-			}
-			conn.Insert("tlkpCurrency", row)
-		}
-
-		iter = conn.Select("tlkpFundingEntity")
+		iter := conn.Select("tlkpFundingEntity")
 		fundingEntityID, err := findValue(iter, item.FundingEntity, "FundingEntity", "FundingEntityID")
 		if err != nil {
 			return err
@@ -77,7 +63,6 @@ func UploadResponseData(resp *facebook.Response, conn *database.Connection) erro
 			AdDeliveryStartDate:       item.AdDeliveryStartDate,
 			AdDeliveryStopDate:        item.AdDeliveryStopDate,
 			AdSnapshotURL:             item.AdSnapshotURL,
-			CurrencyID:                currencyID,
 			FundingEntityID:           fundingEntityID,
 			ImpressionsLower:          impressionsLower,
 			ImpressionsUpper:          impressionsUpper,
