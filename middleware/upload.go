@@ -18,6 +18,7 @@ func UploadResponseData(resp *facebook.Response, conn *database.Connection) erro
 	var rows []*schemas.TblAdLibrary
 
 	for _, item := range resp.Content {
+		// Update tlkpFundingEntity
 		iter := conn.Select("tlkpFundingEntity")
 		fundingEntityID, err := findValue(iter, item.FundingEntity, "FundingEntity", "FundingEntityID")
 		if err != nil {
@@ -32,6 +33,7 @@ func UploadResponseData(resp *facebook.Response, conn *database.Connection) erro
 			conn.Insert("tlkpFundingEntity", row)
 		}
 
+		// Update tlkpPage
 		iter = conn.Select("tlkpPage")
 		pageID, err := findValue(iter, item.PageName, "Page", "PageID")
 		if err != nil {
@@ -44,6 +46,95 @@ func UploadResponseData(resp *facebook.Response, conn *database.Connection) erro
 				Page: item.PageName,
 			}
 			conn.Insert("tlkpPage", row)
+		}
+
+		// Update tlkpAgeRange, tlkpGender, and tblDemographicDistribution
+		for _, demographic := range item.DemographicDistribution {
+			iter := conn.Select("tlkpAgeRange")
+			ageRangeID, err := findValue(iter, demographic.Age, "AgeRange", "AgeRangeID")
+			if err != nil {
+				return err
+			}
+			if ageRangeID == "" {
+				ageRangeID = uuid.NewString()
+				row := &schemas.TlkpAgeRange{
+					ID:       ageRangeID,
+					AgeRange: demographic.Age,
+				}
+				conn.Insert("tlkpAgeRange", row)
+			}
+
+			iter = conn.Select("tlkpGender")
+			genderID, err := findValue(iter, demographic.Gender, "Gender", "GenderID")
+			if err != nil {
+				return err
+			}
+			if genderID == "" {
+				genderID = uuid.NewString()
+				row := &schemas.TlkpGender{
+					ID:     genderID,
+					Gender: demographic.Gender,
+				}
+				conn.Insert("tlkpGender", row)
+			}
+
+			percentage, _ := strconv.ParseFloat(demographic.Percentage, 32)
+			row := &schemas.TblDemographicDistribution{
+				ID:          uuid.NewString(),
+				AdLibraryID: item.ID,
+				AgeRangeID:  ageRangeID,
+				GenderID:    genderID,
+				Percentage:  float32(percentage),
+			}
+			conn.Insert("tblDemographicDistribution", row)
+		}
+
+		// Update tlkpPublisherPlatform and tblPublisherPlatform
+		for _, platform := range item.PublisherPlatforms {
+			iter := conn.Select("tlkpPublisherPlatform")
+			publisherPlatformID, err := findValue(iter, platform, "PublisherPlatform", "PublisherPlatformID")
+			if err != nil {
+				return err
+			}
+			if publisherPlatformID == "" {
+				publisherPlatformID = uuid.NewString()
+				row := &schemas.TlkpPublisherPlatform{
+					ID:                publisherPlatformID,
+					PublisherPlatform: platform,
+				}
+				conn.Insert("tlkpPublisherPlatform", row)
+			}
+			row := &schemas.TblPublisherPlatform{
+				ID:          publisherPlatformID,
+				AdLibraryID: item.ID,
+			}
+			conn.Insert("tblPublisherPlatform", row)
+		}
+
+		// Update tlkpRegion and tblRegionDistribution
+		for _, region := range item.RegionDistribution {
+			iter = conn.Select("tlkpRegion")
+			regionID, err := findValue(iter, region.Region, "Region", "RegionID")
+			if err != nil {
+				return err
+			}
+			if regionID == "" {
+				regionID = uuid.NewString()
+				row := &schemas.TlkpRegion{
+					ID:     regionID,
+					Region: region.Region,
+				}
+				conn.Insert("tlkpRegion", row)
+			}
+
+			percentage, _ := strconv.ParseFloat(region.Percentage, 32)
+			row := &schemas.TblRegionDistribution{
+				ID:          uuid.NewString(),
+				AdLibraryID: item.ID,
+				RegionID:    regionID,
+				Percentage:  float32(percentage),
+			}
+			conn.Insert("tblRegionDistribution", row)
 		}
 
 		impressionsLower, _ := strconv.Atoi(item.Impressions.LowerBound)
@@ -76,6 +167,7 @@ func UploadResponseData(resp *facebook.Response, conn *database.Connection) erro
 		rows = append(rows, row)
 	}
 
+	// Update tblAdLibrary
 	conn.Insert("tblAdLibrary", rows)
 
 	return nil

@@ -27,7 +27,6 @@ func main() {
 	var after string
 
 	for {
-		fmt.Println("here")
 		resp, err := facebook.NewClient().GetAdLibraryData(req, after)
 		if err != nil {
 			log.Fatal(fmt.Sprintf("Err retrieving Facebook Ad Library data:\n%v", err))
