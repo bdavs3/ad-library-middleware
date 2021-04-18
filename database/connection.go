@@ -14,11 +14,10 @@ type Connection struct {
 func NewConnection(project, dataset string) (*Connection, error) {
 	ctx := context.Background()
 	client, err := bigquery.NewClient(ctx, project)
-	ds := client.Dataset(dataset)
-
 	if err != nil {
 		return nil, err
 	}
+	ds := client.Dataset(dataset)
 
 	return &Connection{
 		ctx:     ctx,

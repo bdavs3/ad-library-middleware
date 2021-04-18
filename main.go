@@ -21,7 +21,7 @@ func main() {
 		// This is currently the only ad_type supported. But should keep this here
 		// in case Facebook decides to support others.
 		AdType:      "POLITICAL_AND_ISSUE_ADS",
-		SearchTerms: "alaska",
+		SearchTerms: "california",
 	}
 
 	credentials, err := facebook.GetCredentials("fb-credentials.json")
@@ -39,7 +39,8 @@ func main() {
 		log.Fatal(fmt.Sprintf("Err connecting to BigQuery:\n%v", err))
 	}
 
-	err = middleware.UploadResponseData(items, conn)
+	// err = middleware.UploadResponseData(items, conn)
+	err = middleware.UploadBasic(items, conn)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Err in UploadResponseData:\n%v", err))
 	}

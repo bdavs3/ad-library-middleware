@@ -50,7 +50,7 @@ func NewSdk(cred *Credentials, access_token string) *Sdk {
 }
 
 func (sdk *Sdk) GetAdLibraryData(req *Request) ([]*Item, error) {
-	result, _ := sdk.Session.Get(adLibraryEndpoint, fb.Params{
+	result, err := sdk.Session.Get(adLibraryEndpoint, fb.Params{
 		"access_token": req.AccessToken,
 		"fields":       defaultFields,
 
@@ -60,6 +60,9 @@ func (sdk *Sdk) GetAdLibraryData(req *Request) ([]*Item, error) {
 		"ad_type":              req.AdType,
 		"search_terms":         req.SearchTerms,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	paging, _ := result.Paging(sdk.Session)
 

@@ -175,6 +175,50 @@ func UploadResponseData(items []*facebook.Item, conn *database.Connection) error
 	return nil
 }
 
+// UploadResponseData uses the given items from the Facebook Ad Library to update BigQuery.
+func UploadBasic(items []*facebook.Item, conn *database.Connection) error {
+	var rows []*schemas.TblAdLibrary
+
+	for _, item := range items {
+		impressionsLower, _ := strconv.Atoi(item.Impressions.LowerBound)
+		impressionsUpper, _ := strconv.Atoi(item.Impressions.UpperBound)
+		potentialReachLower, _ := strconv.Atoi(item.PotentialReach.LowerBound)
+		potentialReachUpper, _ := strconv.Atoi(item.PotentialReach.UpperBound)
+		spendLower, _ := strconv.Atoi(item.Spend.LowerBound)
+		spendUpper, _ := strconv.Atoi(item.Spend.UpperBound)
+
+		row := &schemas.TblAdLibrary{
+			ID:                        item.ID,
+			AdCreationDate:            item.AdCreationDate,
+			AdCreativeBody:            item.AdCreativeBody,
+			AdCreativeLinkCaption:     item.AdCreativeLinkCaption,
+			AdCreativeLinkDescription: item.AdCreativeLinkDescription,
+			AdCreativeLinkTitle:       item.AdCreativeLinkTitle,
+			AdDeliveryStartDate:       item.AdDeliveryStartDate,
+			AdDeliveryStopDate:        item.AdDeliveryStopDate,
+			AdSnapshotURL:             item.AdSnapshotURL,
+			FundingEntityID:           uuid.NewString(),
+			ImpressionsLower:          impressionsLower,
+			ImpressionsUpper:          impressionsUpper,
+			PageID:                    uuid.NewString(),
+			PotentialReachLower:       potentialReachLower,
+			PotentialReachUpper:       potentialReachUpper,
+			SpendLower:                spendLower,
+			SpendUpper:                spendUpper,
+		}
+
+		rows = append(rows, row)
+	}
+
+	// Update tblAdLibrary
+	err := conn.Insert("tblAdLibrary", rows)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // findValue looks for the given value using a RowIterator and column name. If the value is
 // found, the value from the specified idCol is returned. Otherwise, the empty string is returned.
 func findValue(iter *bigquery.RowIterator, value, searchCol, idCol string) (string, error) {
