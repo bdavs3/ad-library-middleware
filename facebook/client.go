@@ -2,6 +2,7 @@ package facebook
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -9,13 +10,15 @@ import (
 )
 
 const (
-	adLibraryEndpoint = "/ads_archive"
-	defaultFields     = "['id','ad_creation_time','ad_creative_body','ad_creative_link_caption','ad_creative_link_description','ad_creative_link_title','ad_delivery_start_time','ad_delivery_stop_time','ad_snapshot_url','demographic_distribution','funding_entity','impressions','page_id','page_name','potential_reach','publisher_platforms','region_distribution','spend']"
+	adLibraryEndpoint    = "/ads_archive"
+	tokenRefreshEndpoint = "/oauth/access_token"
+	defaultFields        = "['id','ad_creation_time','ad_creative_body','ad_creative_link_caption','ad_creative_link_description','ad_creative_link_title','ad_delivery_start_time','ad_delivery_stop_time','ad_snapshot_url','demographic_distribution','funding_entity','impressions','page_id','page_name','potential_reach','publisher_platforms','region_distribution','spend']"
 )
 
 type Credentials struct {
-	AppID     string `json:"app_id"`
-	AppSecret string `json:"app_secret"`
+	AppID       string `json:"app_id"`
+	AppSecret   string `json:"app_secret"`
+	AccessToken string `json:"access_token"`
 }
 
 func GetCredentials(file string) (*Credentials, error) {
@@ -37,22 +40,23 @@ func GetCredentials(file string) (*Credentials, error) {
 }
 
 type Sdk struct {
-	Session *fb.Session
+	Session     *fb.Session
+	Credentials *Credentials
 }
 
-func NewSdk(cred *Credentials, access_token string) *Sdk {
-	var globalApp = fb.New(cred.AppID, cred.AppSecret)
-	s := globalApp.Session(access_token)
+func NewSdk(c *Credentials) *Sdk {
+	var globalApp = fb.New(c.AppID, c.AppSecret)
+	s := globalApp.Session(c.AccessToken)
 
 	return &Sdk{
-		Session: s,
+		Session:     s,
+		Credentials: c,
 	}
 }
 
 func (sdk *Sdk) GetAdLibraryData(req *Request) ([]*Item, error) {
 	result, err := sdk.Session.Get(adLibraryEndpoint, fb.Params{
-		"access_token": req.AccessToken,
-		"fields":       defaultFields,
+		"fields": defaultFields,
 
 		"ad_delivery_date_max": req.AdDeliveryDateMax,
 		"ad_delivery_date_min": req.AdDeliveryDateMin,
@@ -64,7 +68,10 @@ func (sdk *Sdk) GetAdLibraryData(req *Request) ([]*Item, error) {
 		return nil, err
 	}
 
-	paging, _ := result.Paging(sdk.Session)
+	paging, err := result.Paging(sdk.Session)
+	if err != nil {
+		return nil, err
+	}
 
 	var results []fb.Result
 	var items []*Item
@@ -93,4 +100,33 @@ func (sdk *Sdk) GetAdLibraryData(req *Request) ([]*Item, error) {
 	}
 
 	return items, nil
+}
+
+// StoreRefreshToken retrieves a long-lived (60 day) token using the access token stored in the
+// credentials used to create the SDK session and stores it in the given JSON file.
+func (sdk *Sdk) StoreRefreshToken(file string) error {
+	result, err := sdk.Session.Get(tokenRefreshEndpoint, fb.Params{
+		"grant_type":        "fb_exchange_token",
+		"client_id":         sdk.Credentials.AppID,
+		"client_secret":     sdk.Credentials.AppSecret,
+		"fb_exchange_token": sdk.Credentials.AccessToken,
+	})
+	if err != nil {
+		return err
+	}
+
+	credentials, err := GetCredentials(file)
+	credentials.AccessToken = fmt.Sprintf("%v", result["access_token"])
+
+	bytes, err := json.MarshalIndent(credentials, "", " ")
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(file, bytes, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

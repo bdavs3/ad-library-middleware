@@ -6,17 +6,16 @@ import (
 	"ad-library-middleware/middleware"
 	"fmt"
 	"log"
-	"os"
 )
 
 const (
-	project = "saguaro-outside-spends"
-	dataset = "fb_outside_spend"
+	appCredentials = "fb-credentials.json"
+	project        = "saguaro-outside-spends"
+	dataset        = "fb_outside_spend"
 )
 
 func main() {
 	req := &facebook.Request{
-		AccessToken:        os.Getenv("access_token"),
 		AdReachedCountries: "US",
 		// This is currently the only ad_type supported. But should keep this here
 		// in case Facebook decides to support others.
@@ -24,12 +23,12 @@ func main() {
 		SearchTerms: "california",
 	}
 
-	credentials, err := facebook.GetCredentials("fb-credentials.json")
+	credentials, err := facebook.GetCredentials(appCredentials)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Err creating Facebook credentials:\n%v", err))
 	}
 
-	items, err := facebook.NewSdk(credentials, req.AccessToken).GetAdLibraryData(req)
+	items, err := facebook.NewSdk(credentials).GetAdLibraryData(req)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Err retrieving Facebook Ad Library data:\n%v", err))
 	}
@@ -43,5 +42,10 @@ func main() {
 	err = middleware.UploadBasic(items, conn)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Err in UploadResponseData:\n%v", err))
+	}
+
+	err = facebook.NewSdk(credentials).StoreRefreshToken(appCredentials)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Err in StoreRefreshToken:\n%v", err))
 	}
 }
