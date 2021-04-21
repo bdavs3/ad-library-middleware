@@ -23,12 +23,14 @@ func main() {
 		SearchTerms: "california",
 	}
 
-	credentials, err := facebook.GetCredentials(appCredentials)
+	credentials, err := facebook.NewCredentials(appCredentials)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Err creating Facebook credentials:\n%v", err))
 	}
 
-	items, err := facebook.NewSdk(credentials).GetAdLibraryData(req)
+	sdk := facebook.NewSdk(credentials)
+
+	items, err := sdk.GetAdLibraryData(req)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Err retrieving Facebook Ad Library data:\n%v", err))
 	}
@@ -44,7 +46,7 @@ func main() {
 		log.Fatal(fmt.Sprintf("Err in UploadResponseData:\n%v", err))
 	}
 
-	err = facebook.NewSdk(credentials).StoreRefreshToken(appCredentials)
+	err = sdk.StoreRefreshToken()
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Err in StoreRefreshToken:\n%v", err))
 	}

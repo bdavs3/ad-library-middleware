@@ -18,13 +18,14 @@ const (
 // Credentials contain the information necessary for pulling data from the Facebook API, as well
 // as refreshing access tokens.
 type Credentials struct {
+	File        string
 	AppID       string `json:"app_id"`
 	AppSecret   string `json:"app_secret"`
 	AccessToken string `json:"access_token"`
 }
 
-// GetCredentials unmarshals the given JSON file into a Credentials struct.
-func GetCredentials(file string) (*Credentials, error) {
+// NewCredentials unmarshals the given JSON file into the returned Credentials struct.
+func NewCredentials(file string) (*Credentials, error) {
 	jsonFile, err := os.Open(file)
 	if err != nil {
 		return nil, err
@@ -38,6 +39,7 @@ func GetCredentials(file string) (*Credentials, error) {
 
 	var credentials *Credentials
 	json.Unmarshal(bytes, &credentials)
+	credentials.File = file
 
 	return credentials, nil
 }
@@ -110,8 +112,8 @@ func (sdk *Sdk) GetAdLibraryData(req *Request) ([]*Item, error) {
 }
 
 // StoreRefreshToken retrieves a long-lived (60 day) token using the access token stored in the
-// credentials used to create the SDK session and stores it in the given JSON file.
-func (sdk *Sdk) StoreRefreshToken(file string) error {
+// Sdk's Credentials. It then replaces the original access token with the new one.
+func (sdk *Sdk) StoreRefreshToken() error {
 	result, err := sdk.Session.Get(tokenRefreshEndpoint, fb.Params{
 		"grant_type":        "fb_exchange_token",
 		"client_id":         sdk.Credentials.AppID,
@@ -122,15 +124,14 @@ func (sdk *Sdk) StoreRefreshToken(file string) error {
 		return err
 	}
 
-	credentials, err := GetCredentials(file)
-	credentials.AccessToken = fmt.Sprintf("%v", result["access_token"])
+	sdk.Credentials.AccessToken = fmt.Sprintf("%v", result["access_token"])
 
-	bytes, err := json.MarshalIndent(credentials, "", "    ")
+	bytes, err := json.MarshalIndent(sdk.Credentials, "", "    ")
 	if err != nil {
 		return err
 	}
 
-	err = os.WriteFile(file, bytes, 0644)
+	err = os.WriteFile(sdk.Credentials.File, bytes, 0644)
 	if err != nil {
 		return err
 	}
