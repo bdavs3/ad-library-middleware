@@ -16,67 +16,120 @@ import (
 func UploadResponseData(items []*facebook.Item, conn *database.Connection) error {
 	var rows []*schemas.TblAdLibrary
 
-	for _, item := range items {
+	var lookupTables = map[string]struct {
+		id  string
+		val string
+	}{
+		"tlkpFundingEntity": {
+			id:  "FundingEntityID",
+			val: "FundingEntity",
+		},
+		"tlkpPage": {
+			id:  "PageID",
+			val: "Page",
+		},
+		"tlkpAgeRange": {
+			id:  "AgeRangeID",
+			val: "AgeRange",
+		},
+		"tlkpGender": {
+			id:  "GenderID",
+			val: "Gender",
+		},
+		"tlkpPublisherPlatform": {
+			id:  "PublisherPlatformID",
+			val: "PublisherPlatform",
+		},
+		"tlkpRegion": {
+			id:  "RegionID",
+			val: "Region",
+		},
+	}
+
+	cacheLayer := database.NewCacheLayer()
+	for name := range lookupTables {
+		cacheLayer.AddTable(name)
+	}
+
+	for i, item := range items {
+		fmt.Println(i)
+
+		var lookupData interface{}
+
 		// Update tlkpFundingEntity
-		iter := conn.Select("tlkpFundingEntity")
-		fundingEntityID, err := findValue(iter, item.FundingEntity, "FundingEntity", "FundingEntityID")
+		table := lookupTables["tlkpFundingEntity"]
+		fundingEntityID, new, err := lookupId("tlkpFundingEntity", item.FundingEntity, table.id, table.val, cacheLayer, conn)
 		if err != nil {
 			return err
 		}
-		if fundingEntityID == "" {
-			fundingEntityID = uuid.NewString()
-			row := &schemas.TlkpFundingEntity{
+
+		if new {
+			lookupData = &schemas.TlkpFundingEntity{
 				ID:            fundingEntityID,
 				FundingEntity: item.FundingEntity,
 			}
-			conn.Insert("tlkpFundingEntity", row)
+			err = conn.Insert("tlkpFundingEntity", lookupData)
+			if err != nil {
+				return err
+			}
 		}
 
 		// Update tlkpPage
-		iter = conn.Select("tlkpPage")
-		pageID, err := findValue(iter, item.PageName, "Page", "PageID")
+		table = lookupTables["tlkpPage"]
+		pageID, new, err := lookupId("tlkpPage", item.PageName, table.id, table.val, cacheLayer, conn)
 		if err != nil {
 			return err
 		}
-		if pageID == "" {
-			pageID = item.PageID // Facebook supplies PageID, so no need for UUID
-			row := &schemas.TlkpPage{
+
+		if new {
+			lookupData = &schemas.TlkpPage{
 				ID:   pageID,
 				Page: item.PageName,
 			}
-			conn.Insert("tlkpPage", row)
-		}
-
-		// Update tlkpAgeRange, tlkpGender, and tblDemographicDistribution
-		for _, demographic := range item.DemographicDistribution {
-			iter := conn.Select("tlkpAgeRange")
-			ageRangeID, err := findValue(iter, demographic.Age, "AgeRange", "AgeRangeID")
+			err = conn.Insert("tlkpPage", lookupData)
 			if err != nil {
 				return err
 			}
-			if ageRangeID == "" {
-				ageRangeID = uuid.NewString()
-				row := &schemas.TlkpAgeRange{
+		}
+
+		for _, demographic := range item.DemographicDistribution {
+			// Update tlkpAgeRange
+			table = lookupTables["tlkpAgeRange"]
+			ageRangeID, new, err := lookupId("tlkpAgeRange", demographic.Age, table.id, table.val, cacheLayer, conn)
+			if err != nil {
+				return err
+			}
+
+			if new {
+				lookupData = &schemas.TlkpAgeRange{
 					ID:       ageRangeID,
 					AgeRange: demographic.Age,
 				}
-				conn.Insert("tlkpAgeRange", row)
+				err = conn.Insert("tlkpAgeRange", lookupData)
+				if err != nil {
+					return err
+				}
 			}
 
-			iter = conn.Select("tlkpGender")
-			genderID, err := findValue(iter, demographic.Gender, "Gender", "GenderID")
+			// Update tlkpGender
+			table = lookupTables["tlkpGender"]
+			genderID, new, err := lookupId("tlkpGender", demographic.Gender, table.id, table.val, cacheLayer, conn)
 			if err != nil {
 				return err
 			}
-			if genderID == "" {
-				genderID = uuid.NewString()
-				row := &schemas.TlkpGender{
+
+			if new {
+				lookupData = &schemas.TlkpGender{
 					ID:     genderID,
 					Gender: demographic.Gender,
 				}
-				conn.Insert("tlkpGender", row)
+				err = conn.Insert("tlkpGender", lookupData)
+				if err != nil {
+					return err
+				}
 			}
 
+			// Update tblDemographicDistribution
 			percentage, _ := strconv.ParseFloat(demographic.Percentage, 32)
 			row := &schemas.TblDemographicDistribution{
 				ID:          uuid.NewString(),
@@ -85,47 +138,62 @@ func UploadResponseData(items []*facebook.Item, conn *database.Connection) error
 				GenderID:    genderID,
 				Percentage:  float32(percentage),
 			}
-			conn.Insert("tblDemographicDistribution", row)
-		}
-
-		// Update tlkpPublisherPlatform and tblPublisherPlatform
-		for _, platform := range item.PublisherPlatforms {
-			iter := conn.Select("tlkpPublisherPlatform")
-			publisherPlatformID, err := findValue(iter, platform, "PublisherPlatform", "PublisherPlatformID")
+			err = conn.Insert("tblDemographicDistribution", row)
 			if err != nil {
 				return err
 			}
-			if publisherPlatformID == "" {
-				publisherPlatformID = uuid.NewString()
-				row := &schemas.TlkpPublisherPlatform{
+		}
+
+		for _, platform := range item.PublisherPlatforms {
+			// Update tlkpPublisherPlatform
+			table = lookupTables["tlkpPublisherPlatform"]
+			publisherPlatformID, new, err := lookupId("tlkpPublisherPlatform", platform, table.id, table.val, cacheLayer, conn)
+			if err != nil {
+				return err
+			}
+
+			if new {
+				lookupData = &schemas.TlkpPublisherPlatform{
 					ID:                publisherPlatformID,
 					PublisherPlatform: platform,
 				}
-				conn.Insert("tlkpPublisherPlatform", row)
+				err = conn.Insert("tlkpPublisherPlatform", lookupData)
+				if err != nil {
+					return err
+				}
 			}
+
+			// Update tblPublisherPlatform
 			row := &schemas.TblPublisherPlatform{
 				ID:          publisherPlatformID,
 				AdLibraryID: item.ID,
 			}
-			conn.Insert("tblPublisherPlatform", row)
-		}
-
-		// Update tlkpRegion and tblRegionDistribution
-		for _, region := range item.RegionDistribution {
-			iter = conn.Select("tlkpRegion")
-			regionID, err := findValue(iter, region.Region, "Region", "RegionID")
+			err = conn.Insert("tblPublisherPlatform", row)
 			if err != nil {
 				return err
 			}
-			if regionID == "" {
-				regionID = uuid.NewString()
-				row := &schemas.TlkpRegion{
+		}
+
+		for _, region := range item.RegionDistribution {
+			// Update tlkpRegion
+			table = lookupTables["tlkpRegion"]
+			regionID, new, err := lookupId("tlkpRegion", region.Region, table.id, table.val, cacheLayer, conn)
+			if err != nil {
+				return err
+			}
+
+			if new {
+				lookupData = &schemas.TlkpRegion{
 					ID:     regionID,
 					Region: region.Region,
 				}
-				conn.Insert("tlkpRegion", row)
+				err = conn.Insert("tlkpRegion", lookupData)
+				if err != nil {
+					return err
+				}
 			}
 
+			// Update tblRegionDistribution
 			percentage, _ := strconv.ParseFloat(region.Percentage, 32)
 			row := &schemas.TblRegionDistribution{
 				ID:          uuid.NewString(),
@@ -133,7 +201,10 @@ func UploadResponseData(items []*facebook.Item, conn *database.Connection) error
 				RegionID:    regionID,
 				Percentage:  float32(percentage),
 			}
-			conn.Insert("tblRegionDistribution", row)
+			err = conn.Insert("tblRegionDistribution", row)
+			if err != nil {
+				return err
+			}
 		}
 
 		impressionsLower, _ := strconv.Atoi(item.Impressions.LowerBound)
@@ -240,4 +311,34 @@ func findValue(iter *bigquery.RowIterator, value, searchCol, idCol string) (stri
 	}
 
 	return "", nil
+}
+
+// lookupId attempts to retrieve the id associated with a given value inside in a lookup table.
+// First, it checks the in-memory cache. Then, it makes a network request to look for the value
+// in BigQuery (if found here, the cache is updated accordingly). If the value is still not found,
+// a new id is created and associated with the value in both BigQuery and the cache. The boolean
+// return value indicates whether a new id was created (e.g. a row needs to be inserted to the
+// lookup table).
+func lookupId(table, value, idCol, valCol string, cl *database.CacheLayer, conn *database.Connection) (string, bool, error) {
+	new := false
+
+	id, err := cl.FindValue(table, value)
+	if err != nil {
+		return "", false, err
+	}
+
+	if id == nil {
+		iter := conn.Select(table)
+		id, err = findValue(iter, value, idCol, valCol)
+		if err != nil {
+			return "", false, err
+		}
+		if id == "" {
+			new = true
+			id = uuid.NewString()
+		}
+		cl.AddKVPair(table, value, id)
+	}
+
+	return id.(string), new, nil
 }

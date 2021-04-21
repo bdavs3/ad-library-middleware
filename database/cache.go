@@ -14,7 +14,9 @@ type CacheLayer struct {
 
 // NewCacheLayer returns a new CacheLayer instance without any tables.
 func NewCacheLayer() *CacheLayer {
-	return &CacheLayer{Tables: nil}
+	return &CacheLayer{
+		Tables: make(map[string]*cache.Cache),
+	}
 }
 
 // AddTable adds a table with the given name to the CacheLayer.
