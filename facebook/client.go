@@ -15,12 +15,15 @@ const (
 	defaultFields        = "['id','ad_creation_time','ad_creative_body','ad_creative_link_caption','ad_creative_link_description','ad_creative_link_title','ad_delivery_start_time','ad_delivery_stop_time','ad_snapshot_url','demographic_distribution','funding_entity','impressions','page_id','page_name','potential_reach','publisher_platforms','region_distribution','spend']"
 )
 
+// Credentials contain the information necessary for pulling data from the Facebook API, as well
+// as refreshing access tokens.
 type Credentials struct {
 	AppID       string `json:"app_id"`
 	AppSecret   string `json:"app_secret"`
 	AccessToken string `json:"access_token"`
 }
 
+// GetCredentials unmarshals the given JSON file into a Credentials struct.
 func GetCredentials(file string) (*Credentials, error) {
 	jsonFile, err := os.Open(file)
 	if err != nil {
@@ -39,11 +42,13 @@ func GetCredentials(file string) (*Credentials, error) {
 	return credentials, nil
 }
 
+// Sdk is used to interface with the Facebook API.
 type Sdk struct {
 	Session     *fb.Session
 	Credentials *Credentials
 }
 
+// NewSdk creates an Sdk instance using the given Credentials.
 func NewSdk(c *Credentials) *Sdk {
 	var globalApp = fb.New(c.AppID, c.AppSecret)
 	s := globalApp.Session(c.AccessToken)
@@ -54,6 +59,8 @@ func NewSdk(c *Credentials) *Sdk {
 	}
 }
 
+// GetAdLibraryData makes a call to the Facebook Ad Library and returns the Items retrieved
+// using the given request.
 func (sdk *Sdk) GetAdLibraryData(req *Request) ([]*Item, error) {
 	result, err := sdk.Session.Get(adLibraryEndpoint, fb.Params{
 		"fields": defaultFields,
@@ -118,7 +125,7 @@ func (sdk *Sdk) StoreRefreshToken(file string) error {
 	credentials, err := GetCredentials(file)
 	credentials.AccessToken = fmt.Sprintf("%v", result["access_token"])
 
-	bytes, err := json.MarshalIndent(credentials, "", " ")
+	bytes, err := json.MarshalIndent(credentials, "", "    ")
 	if err != nil {
 		return err
 	}

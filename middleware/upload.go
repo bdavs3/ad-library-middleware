@@ -175,7 +175,10 @@ func UploadResponseData(items []*facebook.Item, conn *database.Connection) error
 	return nil
 }
 
-// UploadResponseData uses the given items from the Facebook Ad Library to update BigQuery.
+// UploadBasic is a simplified version of UploadResponseData, which uses the given
+// Items from the Facebook Ad Library to update BigQuery. This function only updates
+// tblAdLibrary in order to reduce runtime. It is intended to be used for testing until
+// a caching layer is used in conjunction with UploadResponseData.
 func UploadBasic(items []*facebook.Item, conn *database.Connection) error {
 	var rows []*schemas.TblAdLibrary
 

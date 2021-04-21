@@ -1,5 +1,8 @@
 package schemas
 
+// This file contains type definitions that can be used in the database Insert function.
+// The bigquery tags correspond to column names in each table.
+
 type TblAdLibrary struct {
 	ID                        string `bigquery:"AdLibraryID"`
 	AdCreationDate            string `bigquery:"AdCreationDate"`

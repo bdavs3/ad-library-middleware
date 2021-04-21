@@ -1,15 +1,9 @@
 package facebook
 
-// Response is no longer needed now that an SDK is used to consume the paginated API
-type Response struct {
-	Content []Item `json:"data"`
-	Paging  Paging `json:"paging"`
-}
-
 // Item represents a political advertisement coming down from the Ad Library. Notice that fields
 // like AdCreationDate actually map to JSON fields such as "ad_creation_time". This is because
-// full UTC values never seem to come down from the Ad Library, so the database columns have
-// been named using "Date" instead of "Time".
+// full UTC values aren't coming down from the Ad Library, despite the Facebook documentation
+// promising otherwise. So, they are simply treated as date fields for now.
 type Item struct {
 	ID                        string        `json:"id"`
 	AdCreationDate            string        `json:"ad_creation_time,omitempty"`
@@ -31,6 +25,34 @@ type Item struct {
 	Spend                     InsightsRange `json:"spend,omitempty"`
 }
 
+// Demographic is a demographic grouping tracked by the Facebook Ad Library.
+type Demographic struct {
+	Age        string `json:"age,omitempty"`
+	Gender     string `json:"gender,omitempty"`
+	Percentage string `json:"percentage,omitempty"`
+}
+
+// Region is a region tracked by the Facebook Ad Library.
+type Region struct {
+	Region     string `json:"region,omitempty"`
+	Percentage string `json:"percentage,omitempty"`
+}
+
+// InsightsRange contains lower and upper bounds that represent various metrics in the Facebook
+// Ad Library. For example, the age range 18-24 may be given as an InsightsRange with LowerBound
+//  of 18 and UpperBound of 24.
+type InsightsRange struct {
+	LowerBound string `json:"lower_bound,omitempty"`
+	UpperBound string `json:"upper_bound,omitempty"`
+}
+
+// The following structs are no longer used (since an SDK is used to consume the paginated API),
+// and will eventually be removed:
+type Response struct {
+	Content []Item `json:"data"`
+	Paging  Paging `json:"paging"`
+}
+
 type Paging struct {
 	Cursors Cursors `json:"cursors"`
 }
@@ -38,20 +60,4 @@ type Paging struct {
 type Cursors struct {
 	Before string `json:"before"`
 	After  string `json:"after"`
-}
-
-type Demographic struct {
-	Age        string `json:"age,omitempty"`
-	Gender     string `json:"gender,omitempty"`
-	Percentage string `json:"percentage,omitempty"`
-}
-
-type Region struct {
-	Region     string `json:"region,omitempty"`
-	Percentage string `json:"percentage,omitempty"`
-}
-
-type InsightsRange struct {
-	LowerBound string `json:"lower_bound,omitempty"`
-	UpperBound string `json:"upper_bound,omitempty"`
 }
