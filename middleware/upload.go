@@ -51,8 +51,17 @@ func UploadResponseData(items []*facebook.Item, conn *database.Connection) error
 		cacheLayer.AddTable(name)
 	}
 
-	for i, item := range items {
-		fmt.Println(i)
+	for _, item := range items {
+		// Check whether the item is already in BigQuery. If so, skip it.
+		iter := conn.Select("tblAdLibrary")
+		fmt.Println(item.ID)
+		adLibraryID, err := findValue(iter, item.ID, "AdCreationDate", "AdLibraryID")
+		if err != nil {
+			return err
+		}
+		if adLibraryID != "" {
+			continue
+		}
 
 		var lookupData interface{}
 
