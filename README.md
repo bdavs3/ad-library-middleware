@@ -2,7 +2,7 @@
 
 This repository contains middleware that extracts data from the Facebook [Ad Library](https://www.facebook.com/ads/library/api/?source=archive-landing-page) and inserts it into BigQuery.
 
-This is a contracted project I am working on for [Saguaro Strategies](https://www.saguarostrategies.com/).
+This is a contracted project I worked on for [Saguaro Strategies](https://www.saguarostrategies.com/).
 
 ### Google Credentials
 
